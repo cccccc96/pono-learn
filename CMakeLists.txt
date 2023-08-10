@@ -142,6 +142,7 @@ set(SOURCES
   "${PROJECT_SOURCE_DIR}/core/proverresult.cpp"
   "${PROJECT_SOURCE_DIR}/engines/prover.cpp"
   "${PROJECT_SOURCE_DIR}/engines/bmc.cpp"
+  "${PROJECT_SOURCE_DIR}/engines/ste.cpp"
   "${PROJECT_SOURCE_DIR}/engines/bmc_simplepath.cpp"
   "${PROJECT_SOURCE_DIR}/engines/cegar_ops_uf.cpp"
   "${PROJECT_SOURCE_DIR}/engines/cegar_values.cpp"
