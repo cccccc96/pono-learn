@@ -187,6 +187,7 @@ set(SOURCES
   "${PROJECT_SOURCE_DIR}/utils/syntax_analysis_walker.cpp"
   "${PROJECT_SOURCE_DIR}/utils/syntax_analysis.cpp"
   "${PROJECT_SOURCE_DIR}/options/options.cpp"
+  "${PROJECT_SOURCE_DIR}/ste/ste_specification_encoder.cpp"
   "${BISON_SMVParser_OUTPUTS}"
   "${FLEX_SMVScanner_OUTPUTS}"
   )

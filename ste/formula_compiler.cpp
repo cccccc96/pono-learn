@@ -8,20 +8,25 @@
 #include <string>
 #include <unordered_map>
 #include <stack>
-#include "smt-switch/smt.h"
+// #include "smt-switch/smt.h"
 
 bool isOperator(char c) {
-  return c == '&' || c == '|' || c == '!';
+  return c == '&' || c == '|' || c == '!' 
+          || c == '=' || c == '+' ;
 }
 
 int getPriority(char c) {
   if (c == '!') {
-    return 3;
+    return 100;
   } else if (c == '&') {
-    return 2;
+    return 90;
   } else if (c == '|') {
-    return 1;
-  } else {
+    return 80;
+  } else if (c == '+') {
+    return 70;
+  }else if (c == '=') {
+    return 40;
+  }else {
     return 0;
   }
 }
@@ -33,7 +38,11 @@ smt::Term performOperation(smt::SmtSolver solver_,smt::Term operand1, smt::Term 
     return solver_->make_term(smt::Or,operand1,operand2);
   } else if (op == '!') {
     return solver_->make_term(smt::Not,operand1);
-  } else {
+  } else if (op == '+') {
+    return solver_->make_term(smt::BVAdd,operand1,operand2);
+  }else if (op == '=') {
+    return solver_->make_term(smt::Equal,operand1,operand2);
+  }else {
     assert("guard error!");
     return solver_->make_term(false);
   }
