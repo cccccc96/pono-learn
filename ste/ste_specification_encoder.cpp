@@ -8,6 +8,8 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <ctime>
+#include <iomanip>
 
 #include "core/fts.h"
 #include "core/prop.h"
@@ -51,7 +53,7 @@ smt::Term performOperation(smt::SmtSolver solver_,
                            smt::Term operand2,
                            char op)
 {
-  cout<<operand1->to_string()<<op<<operand2->to_string()<<endl;
+  // cout << operand1->to_string() << op << operand2->to_string() << endl;
   if (op == '&') {
     return solver_->make_term(smt::And, operand1, operand2);
   } else if (op == '|') {
@@ -61,7 +63,7 @@ smt::Term performOperation(smt::SmtSolver solver_,
   } else if (op == '+') {
     return solver_->make_term(smt::BVAdd, operand1, operand2);
   } else if (op == '=') {
-    cout<<solver_->make_term(smt::Equal, operand1, operand2)->to_string()<<endl;
+    // cout << solver_->make_term(smt::Equal, operand1, operand2)->to_string()<< endl;
     return solver_->make_term(smt::Equal, operand1, operand2);
   } else {
     assert("guard error!");
@@ -72,6 +74,7 @@ smt::Term performOperation(smt::SmtSolver solver_,
 smt::Term parseLogicExpression(const smt::SmtSolver solver_,
                                const std::string & expression)
 {
+  // cout<<"start parse"<<endl;
   std::stack<smt::Term> operands;
   std::stack<char> operators;
 
@@ -143,26 +146,27 @@ smt::Term parseLogicExpression(const smt::SmtSolver solver_,
       // 压入符号变量:res
       // 处理是否有[left:right]
       // 处理是否为整数
-      cout<<variable<<endl;
+      // cout << variable << endl;
       Term res;
       vector<string> tokens = pono::syntax_analysis::Split(variable, "[");
-      if(tokens.size()==1){
+      if (tokens.size() == 1) {
         vector<string> tokens2 = pono::syntax_analysis::Split(variable, "@");
-        if(tokens2.size()==1){ //正常的变量
-          res =  solver_->get_symbol(variable);
-        }else {
-          //整数
-          res =  solver_->make_term(stoi(tokens2[0]), solver_->make_sort(BV,stoi(tokens2[1])));
+        if (tokens2.size() == 1) {  // 正常的变量
+          res = solver_->get_symbol(variable);
+        } else {
+          // 整数
+          res = solver_->make_term(stoi(tokens2[0]),
+                                   solver_->make_sort(BV, stoi(tokens2[1])));
         }
-        
-      }else{
+
+      } else {
         Term node = solver_->get_symbol(tokens[0]);
         vector<string> tokens_ = pono::syntax_analysis::Split(tokens[1], ":");
         int left = stoi(tokens_[0]);
-        int right = stoi(tokens_[1].erase(tokens_[1].size()-1));
+        int right = stoi(tokens_[1].erase(tokens_[1].size() - 1));
         res = solver_->make_term(Op(Extract, left, right), node);
       }
-      cout<<res<<endl;
+      // cout << res << endl;
       operands.push(res);
     }
   }
@@ -201,7 +205,7 @@ bool isNumber(const string & str)
 
 SteSpecificationEncoder::SteSpecificationEncoder()
 {
-  //Ander/BubbleFifo/RWSmem/Stack
+  // Ander/BubbleFifo/RWSmem/Stack
   modName = "Risc";
   buildPath = "/root/chisel_with_ste/" + modName + "_build";
   resultPath = buildPath + "/VCD-CEX.vcd";
@@ -209,20 +213,21 @@ SteSpecificationEncoder::SteSpecificationEncoder()
   assertPath = buildPath + "/ste.assert";
 
   // this->ste = ste;
-  convertVerilog2Btor2(buildPath,modName);
+  convertVerilog2Btor2(buildPath, modName);
   loadSteSpec(assertPath, btor2Path, resultPath, buildPath);
 }
 
-SteSpecificationEncoder::SteSpecificationEncoder(string buildPath,string modName)
+SteSpecificationEncoder::SteSpecificationEncoder(string buildPath,
+                                                 string modName)
 {
-  //Ander/BubbleFifo/RWSmem/Stack
-  modName = "Risc";
+  // Ander/BubbleFifo/RWSmem/Stack
+  this->modName = modName;
   string resultPath = buildPath + "/VCD-CEX.vcd";
   string btor2Path = buildPath + "/" + modName + ".btor2";
   string assertPath = buildPath + "/ste.assert";
 
   // this->ste = ste;
-  convertVerilog2Btor2(buildPath,modName);
+  convertVerilog2Btor2(buildPath, modName);
   loadSteSpec(assertPath, btor2Path, resultPath, buildPath);
 }
 
@@ -269,18 +274,19 @@ void SteSpecificationEncoder::convertVerilog2Btor2(string buildPath,
   std::system(command.c_str());
 }
 
-Term SteSpecificationEncoder::nodeStr2BV(FunctionalTransitionSystem fts, string node_str)
+Term SteSpecificationEncoder::nodeStr2BV(FunctionalTransitionSystem fts,
+                                         string node_str)
 {
   Term res;
   // 如果没有[left:right]：
   vector<string> tokens = pono::syntax_analysis::Split(node_str, "[");
-  if(tokens.size()==1){
-    res =  fts.named_terms().at(node_str);
-  }else{
+  if (tokens.size() == 1) {
+    res = fts.named_terms().at(node_str);
+  } else {
     Term node = fts.named_terms().at(tokens[0]);
     vector<string> tokens_ = pono::syntax_analysis::Split(tokens[1], ":");
     int left = stoi(tokens_[0]);
-    int right = stoi(tokens_[1].erase(tokens_[1].size()-1));
+    int right = stoi(tokens_[1].erase(tokens_[1].size() - 1));
     res = s->make_term(Op(Extract, left, right), node);
   }
 
@@ -304,7 +310,6 @@ Term SteSpecificationEncoder::valStr2BV(string value_str, Term node)
   }
   return value;
 }
-
 
 void SteSpecificationEncoder::loadSteSpec(string assertFilePath,
                                           string btor2FilePath,
@@ -331,7 +336,7 @@ void SteSpecificationEncoder::loadSteSpec(string assertFilePath,
   int max_time = 0;
 
   while (getline(inputFile, line)) {
-    cout<<line<<endl;
+    cout << line << endl;
     vector<string> tokens = pono::syntax_analysis::Split(line, ",");
     if (tokens[0] == "VARS" || tokens[0] == "ANT" || tokens[0] == "CONS") {
       flag = tokens[0];
@@ -362,7 +367,7 @@ void SteSpecificationEncoder::loadSteSpec(string assertFilePath,
       // 这一行最终的clock
       clock = stoi(tokens[tokens.size() - 1]);
       // 这一行最终的node
-      Term node = nodeStr2BV(fts,node_str);
+      Term node = nodeStr2BV(fts, node_str);
       // 这一行最终的value
       Term value = valStr2BV(value_str, node);
       // 这一行最终的ant/cons
@@ -375,28 +380,32 @@ void SteSpecificationEncoder::loadSteSpec(string assertFilePath,
         ant_cons_t = s->make_term(PrimOp::Equal, node, value);
       }
 
-      cout<<"ant_cons_t"<<ant_cons_t->to_string()<<endl;
+      // cout << "ant_cons_t" << ant_cons_t->to_string() << endl;
 
       // 2.1 ant加入map
-      if (ant.find(clock) != ant.end()) {
-        ant[clock] = s->make_term(PrimOp::And, ant[clock], ant_cons_t);
-      } else {
-        ant[clock] = ant_cons_t;
+      if (flag == "ANT") {
+        if (ant.find(clock) != ant.end()) {
+          ant[clock] = s->make_term(PrimOp::And, ant[clock], ant_cons_t);
+        } else {
+          ant[clock] = ant_cons_t;
+        }
       }
       // 2.2 cons加入map
-      if (cons.find(clock) != cons.end()) {
-        cons[clock] = s->make_term(PrimOp::And, cons[clock], ant_cons_t);
-      } else {
-        cons[clock] = ant_cons_t;
+      if (flag == "CONS") {
+        if (cons.find(clock) != cons.end()) {
+          cons[clock] = s->make_term(PrimOp::And, cons[clock], ant_cons_t);
+        } else {
+          cons[clock] = ant_cons_t;
+        }
       }
 
       // 更新max_time
       max_time = max(max_time, clock);
     }
-    cout<<"over"<<endl;
+    cout << "over" << endl;
   }
 
-  cout<<"czc"<<endl;
+  // cout << "czc:" << endl;
 
   for (int i = 0; i <= max_time; i++) {
     if (ant.find(i) != ant.end()) {
@@ -410,8 +419,20 @@ void SteSpecificationEncoder::loadSteSpec(string assertFilePath,
       ste.consequent.push_back(s->make_term(true));
     }
   }
-  cout<<"check begin"<<endl;
+  cout << "check begin" << endl;
+  clock_t start_time = clock();
   ProverResult r = ste.check_until(max_time);
-  cout<<"check end"<<endl;
+  clock_t end_time = clock();
+  double duration_seconds = static_cast<double>(end_time - start_time) / CLOCKS_PER_SEC;
+  std::ofstream outfile(buildPath+"/smt_res.txt");
+  if (outfile.is_open()) {
+      outfile << "runtime: " << std::fixed << std::setprecision(2) << duration_seconds << " 秒" << std::endl;
+      outfile << "res: " << to_string(r) <<std::endl;
+      std::cerr << buildPath+"smt_res.txt" << std::endl;
+      outfile.close();
+  } else {
+      std::cerr << "res file open error" << std::endl;
+  }
+  cout << "check end" << endl;
   logger.log(0, "\nSTE RESULT: " + to_string(r));
 }

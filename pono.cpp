@@ -142,11 +142,10 @@ int main(int argc, char * argv[])
 {
   //test
   if (argc == 1) {
-    string modName = "Ander";
+    string modName = "CAM_m_n";
     string buildPath = "/root/chisel_with_ste/" + modName + "_build";
     
-    SteSpecificationEncoder *sse = new SteSpecificationEncoder();
-    sse->convertVerilog2Btor2(buildPath, modName);
+    SteSpecificationEncoder *sse = new SteSpecificationEncoder(buildPath,modName);
 
     // parseFormulaTest();
     // string modName = "Ander";
